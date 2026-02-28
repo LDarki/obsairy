@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="100%" height="100%" viewBox="0 0 1280 720" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
-    <g transform="matrix(1,0,0,1,74.493291,20.669285)">
+<svg width="100%" height="100%" viewBox="0 0 1280 480" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1,0,0,1,74.493291,-99.330715)">
         <text x="526.522px" y="358.314px" style="font-family:'Lato-Regular', 'Lato', sans-serif;font-size:144px;fill:rgb(2,24,47);">Obs</text>
         <g transform="matrix(144,0,0,144,1026.057796,358.313886)">
         </g>
         <text x="784.426px" y="358.314px" style="font-family:'Lato-Regular', 'Lato', sans-serif;font-size:144px;fill:rgb(248,146,73);">airy</text>
     </g>
-    <g transform="matrix(1,0,0,1,132.536718,-23.884567)">
+    <g transform="matrix(1,0,0,1,132.536718,-143.884567)">
         <g transform="matrix(24,0,0,24,876.033796,432.977332)">
         </g>
         <text x="526.522px" y="432.977px" style="font-family:'Lato-Regular', 'Lato', sans-serif;font-size:24px;fill:rgb(151,160,170);">OPEN SOUR<tspan x="661.354px " y="432.977px ">C</tspan>E OBSERV<tspan x="787.858px " y="432.977px ">A</tspan>BILITY</text>
     </g>
-    <g transform="matrix(0.08458,0,0,0.08458,363.21134,360)">
+    <g transform="matrix(0.08458,0,0,0.08458,363.21134,240)">
         <g transform="matrix(1,0,0,1,-3023.622047,-3023.622047)">
             <g transform="matrix(1,0,0,1,-0,-431.055862)">
                 <path d="M2461.836,3864.688C2288.338,3838.664 2077.452,3813.133 1900.563,3809.691L1900.563,2667.024L2461.836,2667.024L2461.836,3864.688Z" style="fill:url(#_Linear1);"/>

@@ -1,4 +1,4 @@
-<img src="assets/Banner.svg" alt="Obsairy Banner" height="520px" />
+<img src="assets/Banner.svg" alt="Obsairy Banner" />
 
 <table>
   <tr>
