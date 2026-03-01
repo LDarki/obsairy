@@ -28,6 +28,8 @@ bun run dev
 
 ## Backend setup
 cd ../server
+cp .env.example .env
+go mod tidy
 go run cmd/server/main.go
 ```
 
