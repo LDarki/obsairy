@@ -27,7 +27,7 @@ bun install
 bun run dev 
 
 ## Backend setup
-cd ..
+cd ../server
 go run cmd/server/main.go
 ```
 
