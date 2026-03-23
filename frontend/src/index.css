@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@theme {
+  --default-font-family: Montserrat, ui-sans-serif, system-ui, sans-serif;
+
+  --color-obsairy-900: oklch(21.72% 0.024 276.90);
+  --color-obsairy-800: oklch(28.50% 0.032 276.90);
+  --color-obsairy-700: oklch(35.28% 0.040 276.90);
+  --color-obsairy-600: oklch(42.06% 0.048 276.90);
+  --color-obsairy-500: oklch(48.84% 0.056 276.90);
+  --color-obsairy-400: oklch(55.62% 0.064 276.90);
+  --color-obsairy-300: oklch(62.40% 0.072 276.90);
+  --color-obsairy-200: oklch(69.18% 0.080 276.90);
+  --color-obsairy-100: oklch(75.96% 0.088 276.90);
+  --color-obsairy-50: oklch(82.74% 0.096 276.90);
+}
