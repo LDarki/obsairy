@@ -16,6 +16,7 @@ type AuthRepo interface {
 }
 
 const UserIDKey = "userID"
+const SessionKey = "session"
 
 func JWTMiddleware(repo AuthRepo) fiber.Handler {
 	return func(c fiber.Ctx) error {
@@ -36,6 +37,7 @@ func JWTMiddleware(repo AuthRepo) fiber.Handler {
 		}
 
 		c.Locals(UserIDKey, userID)
+		c.Locals(SessionKey, session)
 		return c.Next()
 	}
 }
@@ -49,18 +51,27 @@ func GetUserID(c fiber.Ctx) string {
 	return val
 }
 
+// GetSession retrieves the session from the fiber context.
+func GetSession(c fiber.Ctx) any {
+	return c.Locals(SessionKey)
+}
+
 func extractToken(c fiber.Ctx) (string, error) {
 	authHeader := c.Get("Authorization")
-	if authHeader == "" {
-		return "", errors.New("missing authorization header")
+	if authHeader != "" {
+		parts := strings.Split(authHeader, " ")
+		if len(parts) == 2 && parts[0] == "Bearer" {
+			return parts[1], nil
+		}
 	}
 
-	parts := strings.Split(authHeader, " ")
-	if len(parts) != 2 || parts[0] != "Bearer" {
-		return "", errors.New("invalid authorization header format")
+	// Try cookie
+	token := c.Cookies("auth_token")
+	if token != "" {
+		return token, nil
 	}
 
-	return parts[1], nil
+	return "", errors.New("missing authorization header or session cookie")
 }
 
 func validateToken(tokenString string) (string, error) {

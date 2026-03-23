@@ -2,14 +2,19 @@ package auth
 
 import (
 	"obsairy/internal/middleware"
+	"time"
 
 	"github.com/gofiber/fiber/v3"
 )
 
 func RegisterRoutes(app *fiber.App, handler *Handler, repo Repository) {
-	auth := app.Group("/auth")
+	authGroup := app.Group("/auth")
+	registerPublicRoutes(authGroup, handler)
+	registerPrivateRoutes(authGroup, handler, repo)
+}
 
-	auth.Post("/register", func(c fiber.Ctx) error {
+func registerPublicRoutes(group fiber.Router, handler *Handler) {
+	group.Post("/register", func(c fiber.Ctx) error {
 		var body struct {
 			Email    string `json:"email"`
 			Password string `json:"password"`
@@ -24,10 +29,19 @@ func RegisterRoutes(app *fiber.App, handler *Handler, repo Repository) {
 			return c.Status(400).JSON(fiber.Map{"error": err.Error()})
 		}
 
+		// Auto login after registration
+		userAgent := c.Get("User-Agent")
+		ipAddress := c.IP()
+		session, _, err := handler.Login(c.Context(), body.Email, body.Password, userAgent, ipAddress)
+		if err != nil {
+			return c.JSON(user)
+		}
+
+		setAuthCookie(c, session.Token, session.ExpiresAt)
 		return c.JSON(user)
 	})
 
-	auth.Post("/login", func(c fiber.Ctx) error {
+	group.Post("/login", func(c fiber.Ctx) error {
 		var body struct {
 			Email    string `json:"email"`
 			Password string `json:"password"`
@@ -40,18 +54,29 @@ func RegisterRoutes(app *fiber.App, handler *Handler, repo Repository) {
 		userAgent := c.Get("User-Agent")
 		ipAddress := c.IP()
 
-		session, err := handler.Login(c.Context(), body.Email, body.Password, userAgent, ipAddress)
+		session, user, err := handler.Login(c.Context(), body.Email, body.Password, userAgent, ipAddress)
 		if err != nil {
 			return c.Status(401).JSON(fiber.Map{"error": "invalid credentials"})
 		}
 
-		return c.JSON(session)
+		setAuthCookie(c, session.Token, session.ExpiresAt)
+		return c.JSON(user)
 	})
+}
 
-	// Private routes (protected by auth middleware)
-	private := auth.Group("/sessions", middleware.JWTMiddleware(repo))
+func registerPrivateRoutes(group fiber.Router, handler *Handler, repo Repository) {
+	private := group.Group("/sessions", middleware.JWTMiddleware(repo))
 
 	private.Get("/me", func(c fiber.Ctx) error {
+		userID := middleware.GetUserID(c)
+		user, err := handler.GetUser(c.Context(), userID)
+		if err != nil || user == nil {
+			return c.Status(404).JSON(fiber.Map{"error": "user not found"})
+		}
+		return c.JSON(user)
+	})
+
+	private.Get("/", func(c fiber.Ctx) error {
 		userID := middleware.GetUserID(c)
 		sessions, err := handler.GetSessions(c.Context(), userID)
 		if err != nil {
@@ -60,24 +85,50 @@ func RegisterRoutes(app *fiber.App, handler *Handler, repo Repository) {
 		return c.JSON(sessions)
 	})
 
-	private.Delete("/:sessionID", func(c fiber.Ctx) error {
+	registerDeletionRoutes(private, handler)
+}
+
+func registerDeletionRoutes(router fiber.Router, handler *Handler) {
+	router.Delete("/me", func(c fiber.Ctx) error {
+		userID := middleware.GetUserID(c)
+		sessAny := middleware.GetSession(c)
+
+		if sess, ok := sessAny.(*Session); ok {
+			_ = handler.RevokeSession(c.Context(), userID, sess.ID)
+		}
+
+		c.ClearCookie("auth_token")
+		return c.SendStatus(204)
+	})
+
+	router.Delete("/:sessionID", func(c fiber.Ctx) error {
 		userID := middleware.GetUserID(c)
 		sessionID := c.Params("sessionID")
 
 		if err := handler.RevokeSession(c.Context(), userID, sessionID); err != nil {
+			status := 500
 			if err == ErrUnauthorized {
-				return c.Status(403).JSON(fiber.Map{"error": "you can only revoke your own sessions"})
+				status = 403
 			}
-			return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+			return c.Status(status).JSON(fiber.Map{"error": err.Error()})
 		}
 		return c.SendStatus(204)
 	})
 
-	private.Delete("/all/me", func(c fiber.Ctx) error {
+	router.Delete("/all/me", func(c fiber.Ctx) error {
 		userID := middleware.GetUserID(c)
-		if err := handler.RevokeAllSessions(c.Context(), userID); err != nil {
-			return c.Status(500).JSON(fiber.Map{"error": err.Error()})
-		}
+		_ = handler.RevokeAllSessions(c.Context(), userID)
+		c.ClearCookie("auth_token")
 		return c.SendStatus(204)
+	})
+}
+
+func setAuthCookie(c fiber.Ctx, token string, expiresAt time.Time) {
+	c.Cookie(&fiber.Cookie{
+		Name:     "auth_token",
+		Value:    token,
+		Expires:  expiresAt,
+		HTTPOnly: true,
+		SameSite: "Lax",
 	})
 }

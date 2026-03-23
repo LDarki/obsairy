@@ -51,23 +51,23 @@ func (s *Service) Register(ctx context.Context, email, password string) (*User, 
 	return user, nil
 }
 
-func (s *Service) Login(ctx context.Context, email, password, userAgent, ip string) (*Session, error) {
+func (s *Service) Login(ctx context.Context, email, password, userAgent, ip string) (*Session, *User, error) {
 	user, err := s.repo.FindByEmail(ctx, email)
 	if err != nil || user == nil {
-		return nil, ErrInvalidCredentials
+		return nil, nil, ErrInvalidCredentials
 	}
 
 	if err := bcrypt.CompareHashAndPassword(
 		[]byte(user.Password),
 		[]byte(password),
 	); err != nil {
-		return nil, ErrInvalidCredentials
+		return nil, nil, ErrInvalidCredentials
 	}
 
 	expiresAt := time.Now().Add(24 * 7 * time.Hour)
 	token, err := s.generateJWT(user.ID, expiresAt)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	session := &Session{
@@ -80,10 +80,10 @@ func (s *Service) Login(ctx context.Context, email, password, userAgent, ip stri
 	}
 
 	if err := s.repo.CreateSession(ctx, session); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return session, nil
+	return session, user, nil
 }
 
 func (s *Service) generateJWT(userID string, expiresAt time.Time) (string, error) {
@@ -100,6 +100,10 @@ func (s *Service) generateJWT(userID string, expiresAt time.Time) (string, error
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(secret))
+}
+
+func (s *Service) GetUser(ctx context.Context, userID string) (*User, error) {
+	return s.repo.FindByID(ctx, userID)
 }
 
 func (s *Service) GetUserSessions(ctx context.Context, userID string) ([]Session, error) {

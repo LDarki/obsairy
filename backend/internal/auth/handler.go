@@ -14,8 +14,12 @@ func (h *Handler) Register(ctx context.Context, email, password string) (*User, 
 	return h.service.Register(ctx, email, password)
 }
 
-func (h *Handler) Login(ctx context.Context, email, password, userAgent, ip string) (*Session, error) {
+func (h *Handler) Login(ctx context.Context, email, password, userAgent, ip string) (*Session, *User, error) {
 	return h.service.Login(ctx, email, password, userAgent, ip)
+}
+
+func (h *Handler) GetUser(ctx context.Context, userID string) (*User, error) {
+	return h.service.GetUser(ctx, userID)
 }
 
 func (h *Handler) GetSessions(ctx context.Context, userID string) ([]Session, error) {
